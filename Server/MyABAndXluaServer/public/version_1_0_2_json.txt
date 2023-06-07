@@ -1,0 +1,15 @@
+{
+	"status":200,
+	"version":"1.0.2",
+	"message":"本次更新了。。。。",
+	"data":[
+		{
+			"name":"cube",
+			"path":"gameobject/cube.ab"
+		},
+		{
+			"name":"capsule",
+			"path":"gameobject/capsule.ab"
+		}
+	]
+}

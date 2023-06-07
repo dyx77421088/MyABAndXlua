@@ -1,0 +1,10 @@
+ManifestFileVersion: 0
+CRC: 647428835
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: gameobject/cube.ab
+      Dependencies: {}
+    Info_1:
+      Name: gameobject/capsule.ab
+      Dependencies: {}
