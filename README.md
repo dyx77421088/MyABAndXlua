@@ -1,2 +1,3 @@
 # MyABAndXlua
-自己来写热更新，尝试检测版本号然后下载ab包
+在MyABAndXlua\Server\MyABAndXluaServer 下开启服务，用的是node.js 的 express
+node server.js -> 开启服务
