@@ -10,7 +10,6 @@ public class GameLanch : MonoBehaviour
         #region 初始化游戏框架；资源管理，声音管理，网络管理等
         #endregion
 
-        gameObject.AddComponent<RequestUtils>();
         app = gameObject.AddComponent<GameApp>();
         GameStart();
     }

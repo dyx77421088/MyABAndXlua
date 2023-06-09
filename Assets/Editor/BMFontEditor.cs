@@ -45,7 +45,9 @@ namespace ETEditor
             EditorGUILayout.LabelField("图集导出文件部分（如果字体相关资源已经准备完毕，请忽略这一部分）", EditorStyles.label);
             if (GUILayout.Button("在Project视图选中要导出文件的图集，然后点击此按钮"))
             {
-                this.ProcessToSprite();
+                //this.ProcessToSprite();
+                //this.ProcessToSpriteToGuDing();
+                this.ProcessToSpritePdDian();
             }
             EditorGUILayout.Space();
             EditorGUILayout.Space();
@@ -65,8 +67,10 @@ namespace ETEditor
             }
             EditorGUILayout.EndVertical();
         }
+
         private void ProcessToSprite()
         {
+            int addSize = 5; // 给图片增添的外边距
             Texture2D image = Selection.activeObject as Texture2D;//获取选择的对象
             string rootPath = System.IO.Path.GetDirectoryName(AssetDatabase.GetAssetPath(image));//获取路径名称
             string path = rootPath + "/" + image.name + ".PNG"; //图片路径名称
@@ -74,11 +78,13 @@ namespace ETEditor
             AssetDatabase.CreateFolder(rootPath, image.name);//创建文件夹
             foreach (SpriteMetaData metaData in texImp.spritesheet)//遍历小图集
             {
-                Texture2D myimage = new Texture2D((int)metaData.rect.width, (int)metaData.rect.height);
-                for (int y = (int)metaData.rect.y; y < metaData.rect.y + metaData.rect.height; y++)//Y轴像素
+                int addX = addSize, addY = addSize;
+                if (metaData.name == "点") addY = 0;
+                Texture2D myimage = new Texture2D((int)metaData.rect.width + addX * 2, (int)metaData.rect.height + addY * 2);
+                for (int y = (int)metaData.rect.y - addY; y < metaData.rect.y + metaData.rect.height + addY; y++)//Y轴像素
                 {
-                    for (int x = (int)metaData.rect.x; x < metaData.rect.x + metaData.rect.width; x++)
-                        myimage.SetPixel(x - (int)metaData.rect.x, y - (int)metaData.rect.y, image.GetPixel(x, y));
+                    for (int x = (int)metaData.rect.x - addX; x < metaData.rect.x + metaData.rect.width + addX; x++)
+                        myimage.SetPixel(x - (int)metaData.rect.x + addX, y - (int)metaData.rect.y + addY, image.GetPixel(x, y));
                 }
                 if(myimage.format != TextureFormat.ARGB32 && myimage.format != TextureFormat.RGB24)
                 {
@@ -87,10 +93,115 @@ namespace ETEditor
                     myimage = newTexture;
                 }
                 var pngData = myimage.EncodeToPNG();
-                File.WriteAllBytes(rootPath + "/" + image.name + "/" + metaData.name + ".PNG", pngData);// 刷新资源窗口界面
+                File.WriteAllBytes(rootPath + "/" + image.name + "/" + metaData.name + ".png", pngData);// 刷新资源窗口界面
                 AssetDatabase.Refresh();
             }
         }
+        /// <summary>
+        /// 在 ProcessToSprite 的基础上判断是否基于最下方
+        /// </summary>
+        private void ProcessToSpritePdDian()
+        {
+            int addSize = 5; // 给图片增添的外边距
+            Texture2D image = Selection.activeObject as Texture2D;//获取选择的对象
+            string rootPath = System.IO.Path.GetDirectoryName(AssetDatabase.GetAssetPath(image));//获取路径名称
+            string path = rootPath + "/" + image.name + ".PNG"; //图片路径名称
+            TextureImporter texImp = AssetImporter.GetAtPath(path) as TextureImporter;//获取图片入口
+            AssetDatabase.CreateFolder(rootPath, image.name);//创建文件夹
+
+            float maxX = 0, maxY = 0;
+            // 找最大的图片
+            foreach (SpriteMetaData metaData in texImp.spritesheet)
+            {
+                if (maxX < metaData.rect.width) maxX = metaData.rect.width;
+                if (maxY < metaData.rect.height) maxY = metaData.rect.height;
+            }
+
+            foreach (SpriteMetaData metaData in texImp.spritesheet)//遍历小图集
+            {
+                // 计算需要增加的宽和高
+                int addX = addSize, addY = addSize;
+                bool isDian = metaData.name == dian;
+                if (isDian)
+                {
+                    addY = (int)(maxY - metaData.rect.height) / 2;
+                }
+                Texture2D myimage = new Texture2D((int)metaData.rect.width + addX * 2, (int)metaData.rect.height + addY * 2);
+                for (int y = (int)metaData.rect.y - (isDian ? 0 : addY); y < metaData.rect.y + metaData.rect.height + (isDian ? addY * 2 : addY); y++)//Y轴像素
+                {
+                    for (int x = (int)metaData.rect.x - addX; x < metaData.rect.x + metaData.rect.width + addX; x++)
+                        myimage.SetPixel(x - (int)metaData.rect.x + addX, y - (int)metaData.rect.y + (isDian ? 0 : addY), image.GetPixel(x, y));
+                }
+                if (myimage.format != TextureFormat.ARGB32 && myimage.format != TextureFormat.RGB24)
+                {
+                    Texture2D newTexture = new Texture2D(myimage.width, myimage.height);
+                    newTexture.SetPixels(myimage.GetPixels(0), 0);
+                    myimage = newTexture;
+                }
+                var pngData = myimage.EncodeToPNG();
+                File.WriteAllBytes(rootPath + "/" + image.name + "/" + metaData.name + ".png", pngData);// 刷新资源窗口界面
+                AssetDatabase.Refresh();
+            }
+        }
+        private string dian = "点";
+        /// <summary>
+        /// 把导出的图片设定为固定宽高
+        /// </summary>
+        private void ProcessToSpriteToGuDing()
+        {
+
+            Texture2D image = Selection.activeObject as Texture2D;//获取选择的对象
+            string rootPath = System.IO.Path.GetDirectoryName(AssetDatabase.GetAssetPath(image));//获取路径名称
+            string path = rootPath + "/" + image.name + ".PNG"; //图片路径名称
+            TextureImporter texImp = AssetImporter.GetAtPath(path) as TextureImporter;//获取图片入口
+            AssetDatabase.CreateFolder(rootPath, image.name);//创建文件夹
+            float maxX = 0, maxY = 0;
+            // 找最大的图片
+            foreach (SpriteMetaData metaData in texImp.spritesheet)
+            {
+                if (maxX < metaData.rect.width) maxX = metaData.rect.width;
+                if (maxY < metaData.rect.height) maxY = metaData.rect.height;
+            }
+            //int addXTemp = GetXY((int)maxX), addYTemp = GetXY((int)maxY);
+            int addXTemp = (int)maxX, addYTemp = (int)maxY;
+            foreach (SpriteMetaData metaData in texImp.spritesheet)//遍历小图集
+            {
+                // 计算需要增加的宽和高
+                int addX = (addXTemp - (int)metaData.rect.width) / 2, addY = (addYTemp - (int)metaData.rect.height) / 2;
+                bool isDian = metaData.name == dian;
+                Debug.Log("是否是点" + isDian);
+                Texture2D myimage = new Texture2D((int)metaData.rect.width + addX * 2, (int)metaData.rect.height + addY * 2);
+                for (int y = (int)metaData.rect.y - (isDian ? 0 : addY); y < metaData.rect.y + metaData.rect.height + (isDian ? addY * 2 : addY); y++)//Y轴像素
+                {
+                    for (int x = (int)metaData.rect.x - addX; x < metaData.rect.x + metaData.rect.width + addX; x++)
+                        myimage.SetPixel(x - (int)metaData.rect.x + addX, y - (int)metaData.rect.y + (isDian ? 0 : addY), image.GetPixel(x, y));
+                }
+                if (myimage.format != TextureFormat.ARGB32 && myimage.format != TextureFormat.RGB24)
+                {
+                    Texture2D newTexture = new Texture2D(myimage.width, myimage.height);
+                    newTexture.SetPixels(myimage.GetPixels(0), 0);
+                    myimage = newTexture;
+                }
+                var pngData = myimage.EncodeToPNG();
+                File.WriteAllBytes(rootPath + "/" + image.name + "/" + metaData.name + ".png", pngData);// 刷新资源窗口界面
+                AssetDatabase.Refresh();
+            }
+        }
+
+        /// <summary>
+        /// 返回2的x倍数
+        /// </summary>
+        public int GetXY(int size)
+        {
+            int sum = 1;
+            for (int i = 1; i < 20; ++i)
+            {
+                sum *= 2;
+                if (sum >= size) return sum;
+            }
+            return 0;
+        }
+
         void OnInspectorUpdate()
         {
             this.Repaint();

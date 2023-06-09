@@ -5,10 +5,12 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class GameApp : MonoBehaviour
 {
     public static Dictionary<string, GameObject> goDict = new Dictionary<string, GameObject>();
+    
 
     private string webVersion = RequestConfig.versionPath;
     private string localVersion = FileUtils.versionPath;
@@ -62,7 +64,9 @@ public class GameApp : MonoBehaviour
         //Instantiate(go);
 
         // 把这个ab包保存到本地
-        Debug.Log(info);
+        ProgressUi.Instance.SetProgress(info.DownloadProgress);
+        ProgressUi.Instance.SetProgressText(DataUtils.GetDataSize(info.DownloadSpeed), DataUtils.GetDataSize(info.Size));
+
     }
 
     public GameObject GetGameObject(string name)
