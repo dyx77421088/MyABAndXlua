@@ -46,7 +46,7 @@ public class GameApp : MonoBehaviour
         
         foreach (AssetBundleModel ab in abs)
         {
-            reqUtils.GetAssetBundle(ab.Name, ab.Path, SetAssetBundle);
+            reqUtils.GetAssetBundleToUnityWebRequest(ab.Name, ab.Path, SetAssetBundle);
         }
     }
 
@@ -54,12 +54,15 @@ public class GameApp : MonoBehaviour
     /// 从网上获得ab包之后的处理工作
     /// </summary>
     /// <param name="ab"></param>
-    private void SetAssetBundle(string name, AssetBundle ab)
+    private void SetAssetBundle(string name, MyRequestInfoModel info)
     {
-        GameObject go = ab.LoadAsset<GameObject>(name);
-        goDict.Add(name, go);
+        //GameObject go = DownloadHandlerAssetBundle.GetContent(request).LoadAsset<GameObject>(name);
+        //goDict.Add(name, go);
 
-        Instantiate(go);
+        //Instantiate(go);
+
+        // 把这个ab包保存到本地
+        Debug.Log(info);
     }
 
     public GameObject GetGameObject(string name)
