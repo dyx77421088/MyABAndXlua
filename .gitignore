@@ -5,6 +5,8 @@ Logs/
 UserSettings/
 Packages/
 Server/
+DownAB/
+
 *.sln
 *.csproj
 *.sln
