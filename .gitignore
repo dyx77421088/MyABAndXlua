@@ -4,6 +4,7 @@ Temp/
 Logs/
 UserSettings/
 Packages/
+Server/
 *.sln
 *.csproj
 *.sln

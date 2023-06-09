@@ -36,6 +36,7 @@ public class JsonUtils
     public static List<T> GetList<T>(string text)
     {
         List<T> list = new List<T>();
+        Debug.Log(text);
         JObject jo = JObject.Parse(text);
 
         JArray ja = JArray.Parse(jo["data"].ToString());
