@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -67,73 +69,52 @@ public class RequestUtils : MonoBehaviour
     {
         string url = RequestConfig.url + abPath;
         if (url.LastIndexOf(extension) == -1) { url += extension; }
-        UnityWebRequest request = UnityWebRequestAssetBundle.GetAssetBundle(url);
-        request.SendWebRequest();
 
-        ulong size = 0, preSize = 0;
-        float js = 0; // 计时
-        MyRequestInfoModel reModel = new MyRequestInfoModel();
-        while (!request.isDone)
+        //using (UnityWebRequest request = UnityWebRequestAssetBundle.GetAssetBundle(url))
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
-            size = request.downloadedBytes;
-            js += Time.deltaTime;
-            if (reModel.Size == 0)
+            yield return request.SendWebRequest();
+
+            ulong size = 0, preSize = 0;
+            float js = 0; // 计时
+            MyRequestInfoModel reModel = new MyRequestInfoModel();
+            while (!request.isDone)
             {
-                reModel.Size = UnityWebRequestHeadUtils.GetResponseHeaderLength(request);
+                size = request.downloadedBytes;
+                js += Time.deltaTime;
+                if (reModel.Size == 0)
+                {
+                    reModel.Size = UnityWebRequestHeadUtils.GetResponseHeaderLength(request);
+                }
+                if (js >= 0.5f) // 0.5秒后统计速度
+                {
+                    reModel.DownloadSpeed = (long)((size - preSize) / js);
+                    preSize = size;
+                    js = 0;
+                }
+                reModel.DownloadProgress = request.downloadProgress;
+                //Debug.Log(size + ", " + preSize);
+                //Debug.Log("总大小为:" + DataUtils.GetDataSize(UnityWebRequestHeadUtils.GetResponseHeaderLength(request)));
+                //Debug.Log("当前进度为" + request.downloadProgress + "速度：" + (size - preSize) / Time.deltaTime);
+                resp(abName, reModel);
+                yield return null;
             }
-            if (js >= 0.5f) // 0.5秒后统计速度
+            yield return new WaitUntil(() => request.isDone);
+            if (request.result != UnityWebRequest.Result.Success)
             {
-                reModel.DownloadSpeed = (long)((size - preSize) / js);
-                preSize = size;
-                js = 0;
+                Debug.LogError("下载失败: " + request.error);
             }
-            reModel.DownloadProgress = request.downloadProgress;
-            //Debug.Log(size + ", " + preSize);
-            //Debug.Log("总大小为:" + DataUtils.GetDataSize(UnityWebRequestHeadUtils.GetResponseHeaderLength(request)));
-            //Debug.Log("当前进度为" + request.downloadProgress + "速度：" + (size - preSize) / Time.deltaTime);
-            resp(abName, reModel);
-            yield return null;
+            else
+            {
+                Debug.Log("下载成功!");
+                //reModel.Ab = DownloadHandlerAssetBundle.GetContent(request);
+                //File.WriteAllBytes($"{ FileUtils.downPath}/{name}.ab ", request.downloadHandler.data);
+
+                reModel.Data = request.downloadHandler.data;
+                reModel.Ab = AssetBundle.LoadFromMemory(reModel.Data);
+                reModel.DownloadProgress = request.downloadProgress;
+                resp(abName, reModel);
+            }
         }
-        if (request.result != UnityWebRequest.Result.Success)
-        {
-            Debug.LogError("下载失败: " + request.error);
-        }
-        else
-        {
-            Debug.Log("下载成功!");
-            reModel.Ab = DownloadHandlerAssetBundle.GetContent(request);
-            resp(abName, reModel);
-        }
-        yield break;
-
-        //ulong prevDownloadedBytes = 0;
-        //float downloadSpeed = 0;
-        //float t = 0;
-
-        //while (!request.isDone)
-        //{
-        //    t += Time.deltaTime;
-        //    if (t >= 0.5f)
-        //    {
-        //        ulong currentDownloadedBytes = request.downloadedBytes;
-        //        // bytes/s
-        //        downloadSpeed = (currentDownloadedBytes - prevDownloadedBytes) / t;
-
-        //        Debug.Log("Download speed: " + DataUtils.GetDataSize((long)downloadSpeed));
-
-        //        prevDownloadedBytes = currentDownloadedBytes;
-        //        t = 0;
-        //    }
-        //    yield return null;
-        //}
-
-        //if (request.result == UnityWebRequest.Result.ConnectionError)
-        //{
-        //    Debug.Log(request.error);
-        //}
-        //else
-        //{
-        //    // Download complete
-        //}
     }
 }

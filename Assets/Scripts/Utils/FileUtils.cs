@@ -1,6 +1,7 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
+using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 
 public class FileUtils
@@ -9,6 +10,7 @@ public class FileUtils
     /// 本地存放版本号的文件路径
     /// </summary>
     public static string versionPath = "version";
+    public static string downPath = "DownAB";
     public static string GetTextByResources(string path)
     {
         return Resources.Load<TextAsset>(path).text;
@@ -51,17 +53,14 @@ public class FileUtils
     /// </summary>
     /// <param name="path"></param>
     /// <param name="text"></param>
-    public static void WriteABByPath(string path, AssetBundle ab)
+    public static void WriteABByPath(string name, byte[] data)
     {
-        //string filePath = Application.persistentDataPath + "/mybundle";
-        //File.WriteAllBytes("", ab.get);
-        //using (FileStream fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None))
-        //{
-        //    using (StreamWriter sr = new StreamWriter(fs, System.Text.Encoding.Default))
-        //    {
-        //        if (null == sr) return;
-        //        sr.Write(text);
-        //    }
-        //}
+        Debug.Log(name);
+        if (!Directory.Exists(downPath))
+        {
+            Directory.CreateDirectory(downPath);
+        }
+        //byte[] bytes = ab.Serialize();
+        File.WriteAllBytes($"{downPath}/{name}.ab", data);
     }
 }

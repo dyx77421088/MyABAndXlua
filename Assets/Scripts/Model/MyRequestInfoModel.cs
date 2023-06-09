@@ -15,6 +15,8 @@ public class MyRequestInfoModel
     private long downloadSpeed;
     // ab°ü
     private AssetBundle ab;
+    // dataÊý¾Ý
+    private byte[] data;
 
     public MyRequestInfoModel(long size, float downloadProgress, long downloadSpeed, AssetBundle ab)
     {
@@ -32,6 +34,7 @@ public class MyRequestInfoModel
     public float DownloadProgress { get => downloadProgress; set => downloadProgress = value; }
     public long DownloadSpeed { get => downloadSpeed; set => downloadSpeed = value; }
     public AssetBundle Ab { get => ab; set => ab = value; }
+    public byte[] Data { get => data; set => data = value; }
 
     public override string ToString()
     {

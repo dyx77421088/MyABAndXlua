@@ -64,9 +64,17 @@ public class GameApp : MonoBehaviour
         //Instantiate(go);
 
         // 把这个ab包保存到本地
-        ProgressUi.Instance.SetProgress(info.DownloadProgress);
+        ProgressUi.Instance.SetProgress(info.DownloadProgress, info.Ab == null ? -1 : 1);
         ProgressUi.Instance.SetProgressText(DataUtils.GetDataSize(info.DownloadSpeed), DataUtils.GetDataSize(info.Size));
 
+        if (info.Data != null)
+        {
+            FileUtils.WriteABByPath(name, info.Data);
+            GameObject go = info.Ab.LoadAsset<GameObject>(name);
+            goDict.Add(name, go);
+
+            Instantiate(go);
+        }
     }
 
     public GameObject GetGameObject(string name)

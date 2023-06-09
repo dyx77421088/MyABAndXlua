@@ -30,9 +30,10 @@ public class ProgressUi : MonoBehaviour
     /// <summary>
     /// 设置当前的进度
     /// </summary>
-    public void SetProgress(float progress)
+    public void SetProgress(float progress, float duration = -1)
     {
-        slider.value = progress;
+        if (duration != -1) slider.DOValue(progress, duration);
+        else slider.value = progress;
     }
 
     public void SetProgressText(string downloadSpeed, string size)
